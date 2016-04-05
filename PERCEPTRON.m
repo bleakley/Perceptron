@@ -1,6 +1,7 @@
 classdef PERCEPTRON < handle
     %PERCEPTRON Implements a multi-layer perceptron with sigmoid tfn
     % Copyright Anton Tkachev 2015
+    % Modified by Brian Bleakley 2016
     %% Properties of the perceptron
     properties
         layer;    % array that defines the number of neurons in each layer
@@ -8,6 +9,7 @@ classdef PERCEPTRON < handle
         nTrans;   % total number of transitions between the layers
         weight;   % cell of neurons' weights matrices
         alpha;    % sigmoid function coefficient
+        divergence; % boolean value; whether the network has diverged
     end
     
     %% Methods of the perceptron
@@ -19,6 +21,7 @@ classdef PERCEPTRON < handle
             obj.nLayers = length(layers_vector);
             obj.nTrans = length(layers_vector) - 1;
             obj.weight = cell(obj.nTrans,1);
+            obj.divergence = 0;
             
             a = 0.5;    % bounds for weights random initialization
             for i = 1 : obj.nTrans
@@ -66,6 +69,7 @@ classdef PERCEPTRON < handle
             for i = 1 : obj.nTrans
                 W{i} = W{i} - eta*delta{i}*O{i+1}.';
             end
+            obj.divergence = max(isnan(W{1}));
             obj.weight = flip(W);
         end
     end
