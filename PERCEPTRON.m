@@ -25,22 +25,25 @@ classdef PERCEPTRON < handle
             
             a = 0.5;    % bounds for weights random initialization
             for i = 1 : obj.nTrans
-                obj.weight{i} = 2*a*rand(obj.layer(i+1),obj.layer(i)) - a;
+                obj.weight{i} = 2*a*rand(obj.layer(i+1)+1,obj.layer(i)+1) - a;
             end
         end
         
         %% Forward neural network calculation
         function out = forward(obj,input_col_vector)
-            n = obj.nTrans;
+            n = obj.nTrans;%nLayers - 1
             A = cell(obj.nLayers,1);
             
-            A{1} = input_col_vector;
+            A{1} = [input_col_vector;1];%bias
             for i = 1 : n - 1
                 A{i+1} = PERCEPTRON.tfn(obj.weight{i}*A{i},obj.alpha);
+                A{i+1}(end) = 1;%bias
             end
             A{n+1} = obj.weight{n}*A{n};
             
-            out = A{obj.nLayers};
+            A{n+1} = A{n+1}(1:(end-1));%remove the last element (would be bias node)
+            
+            out = PERCEPTRON.tfn(A{obj.nLayers},obj.alpha);%same as n+1
         end
         
         %% Error back propagation. Single sample
@@ -48,14 +51,16 @@ classdef PERCEPTRON < handle
             n = obj.nTrans;
             O = cell(obj.nLayers,1);
             
-            O{1} = input;
+            O{1} = [input;1];%bias
             for i = 1 : n - 1
                 O{i+1} = PERCEPTRON.tfn(obj.weight{i}*O{i},obj.alpha);
+                O{i+1}(end) = 1;%bias
             end
             O{n+1} = obj.weight{n}*O{n};
+            %O{n+1} = O{1:(end-1)};%remove the last element (would be bias node)
             
             O = flip(O);
-            T = desired_output;
+            T = [desired_output;1];%bias
             W = flip(obj.weight);
             delta = cell(obj.nTrans,1);
             
